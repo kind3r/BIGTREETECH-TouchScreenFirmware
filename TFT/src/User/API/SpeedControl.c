@@ -1,51 +1,59 @@
 #include "SpeedControl.h"
 #include "includes.h"
 
-static u16 percentage[SPEED_NUM]     = {100,   100};     //Speed  Flow
-static u16 lastPercentage[SPEED_NUM] = {100,   100}; //Speed  Flow
-static u16 curPercentage[SPEED_NUM]  = {100,   100};  //Speed  Flow
+const char *const speedCmd[SPEED_NUM] = {"M220","M221"};
 
-static bool send_waiting[SPEED_NUM];
+static uint16_t setPercent[SPEED_NUM] = {100, 100};
+static uint16_t lastSetPercent[SPEED_NUM] = {100, 100};
+static uint16_t curPercent[SPEED_NUM] = {100, 100};
 
-void speedSetSendWaiting(u8 tool, bool isWaiting)
+static bool speedQueryWait = false;
+static uint32_t nextSpeedTime = 0;
+
+#define NEXT_SPEED_WAIT 500  // 1 second is 1000
+
+void speedSetCurPercent(uint8_t tool, uint16_t per)
 {
-  send_waiting[tool] = isWaiting;
+  curPercent[tool] = per;
 }
 
-void speedSetPercent(u8 tool, u16 per)
+uint16_t speedGetCurPercent(uint8_t tool)
 {
-  percentage[tool]=limitValue(SPEED_MIN, per, SPEED_MAX);
+  return curPercent[tool];
 }
 
-u16 speedGetPercent(u8 tool)
+void speedSetPercent(uint8_t tool, uint16_t per)
 {
-  return percentage[tool];
+  setPercent[tool]=NOBEYOND(SPEED_MIN, per, SPEED_MAX);
 }
 
-bool SpeedChanged(u8 i)
+uint16_t speedGetSetPercent(uint8_t tool)
 {
-  if (lastPercentage[i] != percentage[i])
-  {
-    lastPercentage[i] = percentage[i];
-    return true;
-  }
-  else
-  {
-    return false;
-  }
+  return setPercent[tool];
 }
 
 void loopSpeed(void)
 {
-  for(u8 i = 0; i < SPEED_NUM;i++)
-    if(curPercentage[i] != percentage[i])
+  for (uint8_t i = 0; i < SPEED_NUM; i++)
+  {
+    if (lastSetPercent[i] != setPercent[i]  && (OS_GetTimeMs() > nextSpeedTime))
     {
-      curPercentage[i] = percentage[i];
-      //if(send_waiting[i] != true)
-      //{
-        //send_waiting[i] = true;
-      char *speedCmd[SPEED_NUM] = {"M220","M221"};
-      storeCmd("%s S%d\n",speedCmd[i], percentage[i]);
-      //}
+      if (storeCmd("%s S%d D%d\n",speedCmd[i], setPercent[i], heatGetCurrentTool()))
+        lastSetPercent[i] = setPercent[i];
+      nextSpeedTime = OS_GetTimeMs() + NEXT_SPEED_WAIT;  // avoid rapid fire, clogging the queue
     }
+  }
+}
+
+void speedQuerySetWait(bool wait)
+{
+  speedQueryWait = wait;
+}
+
+void speedQuery(void)
+{
+  if (infoHost.connected && !infoHost.wait && !speedQueryWait)
+  {
+    speedQueryWait = storeCmd("M220\nM221 D%d\n", heatGetCurrentTool());
+  }
 }

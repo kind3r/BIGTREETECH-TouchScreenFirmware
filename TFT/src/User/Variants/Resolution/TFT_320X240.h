@@ -33,16 +33,23 @@
 #define SMALLICON_HEIGHT  40
 
 // Status screen menu
+#define SSICON_COUNT              4
+#define SSICON_WIDTH              ICON_WIDTH
+#define SSICON_HEIGHT             ICON_HEIGHT
 #define SSICON_VAL_Y0             55
+#define SSICON_VAL_COLOR          BLACK
 #define SSICON_NAME_Y0            5
+#define SSICON_NAME_COLOR         WHITE
 #define STATUS_MSG_ICON_XOFFSET   3
 #define STATUS_MSG_ICON_YOFFSET   3
 #define STATUS_MSG_TITLE_XOFFSET  3
 #define STATUS_MSG_BODY_XOFFSET   0
 #define STATUS_MSG_BODY_YOFFSET   45
 #define STATUS_MSG_BODY_BOTTOM    4
-#define STATUS_TITLE_SHORT        10
 #define STATUS_GANTRY_YOFFSET     4
+
+#define NAME_LARGE_FONT           false
+#define VAL_LARGE_FONT            false
 
 //Heating Menu
 #define PREHEAT_TITLE_Y   3
@@ -70,5 +77,8 @@
 #define POPUP_RECT_SINGLE_CONFIRM {110, LCD_HEIGHT- SPACE_Y - 5 - POPUP_BUTTON_HEIGHT, 210, LCD_HEIGHT - SPACE_Y - 5}
 #define POPUP_RECT_DOUBLE_CONFIRM {40,  LCD_HEIGHT- SPACE_Y - 5 - POPUP_BUTTON_HEIGHT, 140, LCD_HEIGHT - SPACE_Y - 5}
 #define POPUP_RECT_DOUBLE_CANCEL  {180, LCD_HEIGHT- SPACE_Y - 5 - POPUP_BUTTON_HEIGHT, 280, LCD_HEIGHT - SPACE_Y - 5}
+
+// The offset of the model preview icon in the gcode file
+#define MODEL_PREVIEW_OFFSET 0x01
 
 #endif
